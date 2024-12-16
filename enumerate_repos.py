@@ -31,8 +31,6 @@ while url:
 
 # Print all repository details
 for repo in all_repos:
-    print(f"Repository Name: {repo['name']}")
-    print(f"URL: {repo['html_url']}")
-    print("-" * 40)
+    print(f"{repo['html_url']}")
 
-print(f"Total Repositories: {len(all_repos)}")
+#print(f"Total Repositories: {len(all_repos)}")
