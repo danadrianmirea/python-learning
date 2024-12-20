@@ -9,15 +9,19 @@ def is_git_repo(path):
     except subprocess.CalledProcessError:
         return False
 
-def get_modified_files(path):
-    """Get the list of modified files in the repository."""
+def get_modified_and_untracked_files(path):
+    """Get the list of modified and untracked files in the repository."""
     try:
         result = subprocess.run(
             ["git", "status", "--porcelain"], cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
         )
         lines = result.stdout.strip().split("\n")
         modified_files = [line[3:] for line in lines if line.startswith(" M")]
-        return modified_files
+        untracked_files_result = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard"], cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
+        )
+        untracked_files = untracked_files_result.stdout.strip().split("\n")
+        return modified_files + untracked_files
     except subprocess.CalledProcessError:
         return []
 
@@ -34,12 +38,12 @@ def commit_file(repo_path, file_path):
 
 def process_git_repo(repo_path):
     """Check for local changes and commit them file by file."""
-    modified_files = get_modified_files(repo_path)
-    if not modified_files:
+    files_to_commit = get_modified_and_untracked_files(repo_path)
+    if not files_to_commit:
         print(f"No changes in repository: {repo_path}")
         return
 
-    for file in modified_files:
+    for file in files_to_commit:
         commit_file(repo_path, file)
 
 def main(start_path):
